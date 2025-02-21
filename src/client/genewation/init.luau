@@ -299,7 +299,12 @@ function genewation.clear()
         warn("No generation to clear")
         return
     end
+    local s = os.clock()
     for _,part in GenerationParts do
+        if os.clock()-s > 0.0014 then
+            task.wait()
+            s = os.clock()
+        end
         recyclePart(part)
     end
     table.clear(GenerationParts)
