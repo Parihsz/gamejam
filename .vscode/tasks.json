@@ -1,0 +1,22 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Generate Rojo Sourcemap",
+            "type": "shell",
+            "command": "rojo",
+            "args": [
+                "sourcemap",
+                "default.project.json",
+                "--output",
+                "sourcemap.json"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+    
+    ]
+}
