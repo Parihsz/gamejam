@@ -30,7 +30,7 @@ local waves = {
 local baseWaves = table.clone(waves)
 do
     for i ,wave in waves do
-        baseWaves = table.clone(wave)
+        baseWaves[i] = table.clone(wave)
     end
 end
 
