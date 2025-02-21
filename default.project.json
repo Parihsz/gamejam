@@ -1,0 +1,11 @@
+{
+  "name": "balls",
+  "emitLegacyScripts": false,
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": { "Shared": { "$path": "src/shared" },
+    "Client": { "$path": "src/client" }
+    },
+    "ServerScriptService": { "Services": { "$path": "src/server" } }
+  }
+}
