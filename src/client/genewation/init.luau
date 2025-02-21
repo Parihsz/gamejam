@@ -10,10 +10,14 @@ local MeshPart
 local GenerationFolder = Instance.new("Folder",workspace)
 GenerationFolder.Name = "Generation"
 
+local GenerationParts = {}
+local CenterPart 
+
 local Noise = require(script.noisyrawr)
 local Ocean = require(script.wavesuwu)
 
 local PART_SIZE = 4
+local WAVE_SPEED = 1/4
 
 local plane = Ocean.create_plane(40, 40)
 local vertices = {}
@@ -125,9 +129,11 @@ function genewation.settings()
         CenterRadius = 30, -- The radius of the center
         InnerSize = 60, -- How far before the wall starts
         OuterSize = 70, -- How far the wall goes
+
         Waves = baseWaves, -- The settings
         WaveColor = Color3.fromRGB(0, 162, 255), -- The color of the waves
         WaveMaterial = Enum.Material.Water, -- The material of the waves
+        WaveSpeed = 1/4, -- The speed of the waves
 
         CenterYOffset = 4, -- The offset of the center in the Y direction
         WallYOffset = 10, -- The offset of the wall in the Y direction
@@ -184,6 +190,8 @@ function genewation.generate(settings:settings)
     local Blocks = settings.Blocks
     local CenterModel = settings.CenterModel
 
+    WAVE_SPEED = settings.WaveSpeed
+
     MeshPart.Color = settings.WaveColor
     MeshPart.Material = settings.WaveMaterial
     for i, wave in ipairs(settings.Waves) do
@@ -193,23 +201,26 @@ function genewation.generate(settings:settings)
     end
 
     if not settings.UseCylinder and  not CenterModel then
+        local Model = Instance.new("Model")
         for x = -CenterRadius, CenterRadius, 1 do
             for z = -CenterRadius, CenterRadius, 1 do
                 if math.sqrt(x^2 + z^2) > CenterRadius+.1 then
                     continue
                 end
-    
+
                 local position = Vector3.new(x, CenterYOffset, z) + Center
                 local part = Instance.new("Part")
                 part.Size = Vector3.new(PART_SIZE,position.Y*PART_SIZE,PART_SIZE)
                 part.Position = Vector3.new(position.X*PART_SIZE,position.Y/2*PART_SIZE,position.Z*PART_SIZE)
                 part.Anchored = true
-                part.Parent = GenerationFolder
+                part.Parent = Model
                 part.Color = Color3.fromRGB(245, 245, 148)
                 part.Material = Enum.Material.Sand
-    
+                
             end
         end
+        Model.Parent = workspace
+        CenterPart = Model
     elseif not CenterModel then
         local Cylinder = Instance.new("Part")
         Cylinder.Shape = Enum.PartType.Cylinder
@@ -220,10 +231,12 @@ function genewation.generate(settings:settings)
         Cylinder.Parent = workspace
         Cylinder.Color = Color3.fromRGB(245, 245, 148)
         Cylinder.Material = Enum.Material.Sand
+        CenterPart = Cylinder
     else
         local Model = CenterModel:Clone()
         Model:PivotTo(CFrame.new(Center.X*PART_SIZE,(CenterYOffset+Center.Y)*PART_SIZE/2,Center.Z*PART_SIZE)*Model:GetPivot().Rotation)
         Model.Parent = workspace
+        CenterPart = Model
     end
 
     task.wait()
@@ -276,13 +289,28 @@ function genewation.generate(settings:settings)
         part.Position = (data.midPoint) * PART_SIZE
         part.Material = bData.Material
         part.Color = bData.Color
+        table.insert(GenerationParts,part)
     end
 
 end
 
+function genewation.clear()
+    if not CenterPart then
+        warn("No generation to clear")
+        return
+    end
+    for _,part in ipairs(GenerationParts) do
+        recyclePart(part)
+    end
+    GenerationParts = {}
+    if CenterPart then
+        CenterPart:Destroy()
+    end
+end
+
 local t = 0
 local function update_wave_points(dt)
-    t+=dt/4
+    t+=dt*WAVE_SPEED
 	local solved_plane = Ocean.solve_plane_async(plane, waves, t)
 	debug.profilebegin("updating the part points")
 	for undisturbed_point, offset in solved_plane do
