@@ -29,7 +29,7 @@ local waves = {
 }
 local baseWaves = table.clone(waves)
 do
-    for i ,wave in ipairs(waves) do
+    for i ,wave in waves do
         baseWaves = table.clone(wave)
     end
 end
@@ -160,7 +160,7 @@ local BACKWARD = Vector3.new(0,0,-1)
 local function cullBlocks(blocks)
     local new = {}
     local s = os.clock()
-    for position, value in pairs(blocks) do
+    for position, value in blocks do
         if os.clock()-s > 0.0014 then
             task.wait()
             s = os.clock()
@@ -194,8 +194,8 @@ function genewation.generate(settings:settings)
 
     MeshPart.Color = settings.WaveColor
     MeshPart.Material = settings.WaveMaterial
-    for i, wave in ipairs(settings.Waves) do
-        for k,v in pairs(wave) do
+    for i, wave in settings.Waves do
+        for k,v in wave do
             waves[i][k] = v
         end
     end
@@ -299,10 +299,10 @@ function genewation.clear()
         warn("No generation to clear")
         return
     end
-    for _,part in ipairs(GenerationParts) do
+    for _,part in GenerationParts do
         recyclePart(part)
     end
-    GenerationParts = {}
+    table.clear(GenerationParts)
     if CenterPart then
         CenterPart:Destroy()
     end
