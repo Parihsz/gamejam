@@ -21,7 +21,7 @@ do
     Info.UseCylinder = false
     Info.CenterModel = game.ReplicatedStorage:FindFirstChild('Model')
 end
-Scene
+
 do
     local Info = Generation.settings()
     Settings.DifferentColor = Info
