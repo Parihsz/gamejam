@@ -4,7 +4,18 @@ local genewation = {}
 local RunService = game:GetService("RunService")
 local AssetService = game:GetService("AssetService")
 local GreedyMesh = require(script.gweedymesh)
-local EditableMesh = AssetService:CreateEditableMesh()
+
+local EnableEditableMesh,EditableMesh = pcall(function()
+    local t = AssetService:CreateEditableMesh()
+    t:AddVertex(Vector3.zero)
+    t:Destroy()
+    return AssetService:CreateEditableMesh()
+end) 
+
+if not EnableEditableMesh then
+    warn("EditableMesh is not enabled")
+end
+
 local MeshPart 
 
 local GenerationFolder = Instance.new("Folder",workspace)
@@ -71,7 +82,7 @@ local function recyclePart(part)
     table.insert(PartCache,part)
 end
 
-do
+if EnableEditableMesh then
     for _, undisturbed_point in plane do
         local vertex = EditableMesh:AddVertex(undisturbed_point)
         vertices[undisturbed_point] = vertex
@@ -191,9 +202,10 @@ function genewation.generate(settings:settings)
     local CenterModel = settings.CenterModel
 
     WAVE_SPEED = settings.WaveSpeed
-
-    MeshPart.Color = settings.WaveColor
-    MeshPart.Material = settings.WaveMaterial
+    if MeshPart then
+        MeshPart.Color = settings.WaveColor
+        MeshPart.Material = settings.WaveMaterial
+    end
     for i, wave in settings.Waves do
         for k,v in wave do
             waves[i][k] = v
@@ -271,7 +283,9 @@ function genewation.generate(settings:settings)
             end
         end
     end
-    MeshPart.Position = Vector3.new(Center.X*PART_SIZE,Center.Y*PART_SIZE+10,Center.Z*PART_SIZE) - Vector3.new(MeshPart.Size.X/2,0,MeshPart.Size.Z/2)
+    if MeshPart then
+        MeshPart.Position = Vector3.new(Center.X*PART_SIZE,Center.Y*PART_SIZE+10,Center.Z*PART_SIZE) - Vector3.new(MeshPart.Size.X/2,0,MeshPart.Size.Z/2)
+    end
     task.wait()
     local culled = cullBlocks(blocks)
     task.wait()
@@ -314,6 +328,9 @@ end
 
 local t = 0
 local function update_wave_points(dt)
+    if not EnableEditableMesh then
+        return
+    end
     t+=dt*WAVE_SPEED
 	local solved_plane = Ocean.solve_plane_async(plane, waves, t)
 	debug.profilebegin("updating the part points")
