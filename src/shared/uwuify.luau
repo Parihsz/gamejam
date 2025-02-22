@@ -61,5 +61,5 @@ local function uwuify(message)
         :gsub("([^.,!][.,!])([ \t\n])", function(p1, p2) return p1.." "..selectRandomElement(endings)..p2 end) 
     return message
 end
-
+print(uwuify('interpolationBuffer'))
 return uwuify
