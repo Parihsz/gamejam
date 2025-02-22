@@ -6,6 +6,7 @@ local Serilizer = require(ReplicatedStorage.sewilizer)
 
 local BallStorage = Instance.new("Folder",ReplicatedStorage)
 BallStorage.Name = "BallReplication"
+local BallHolder = require(ReplicatedStorage.ballHolder)
 
 local IDS = {}
 local COUNT = 0
@@ -26,6 +27,13 @@ end
 local Ball = {}
 local Balls = {}
 
+function Ball.remove(ball:Physics.ball)
+    Balls[ball.ID] = nil
+    BallHolder.removeBall(ball)
+    push(ball.ID)
+    ball:Destroy()
+end
+
 function Ball.new(player:Player?)
     local ID = pop()
     local Ball = Physics.newBall(Vector3.new(0, 100, 0), 5)
@@ -38,6 +46,7 @@ function Ball.new(player:Player?)
     if player then
         player:SetAttribute("BallID", ID)
     end
+    BallHolder.addBall(Ball)
     return Ball
 end
 

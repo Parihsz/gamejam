@@ -207,7 +207,7 @@ function Ball:Destroy()
     Balls[self.part] = nil
 end
 
-type ball = typeof(Physics.newBall(1))
+export type ball = typeof(Physics.newBall(1))
 
 function Physics.step()
     for _,ball in pairs(Balls) do

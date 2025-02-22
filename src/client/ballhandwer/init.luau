@@ -9,7 +9,7 @@ local Physics = require(ReplicatedStorage.phwsics)
 local Serilizer = require(ReplicatedStorage.sewilizer)
 
 local BallStorage = ReplicatedStorage:WaitForChild('BallReplication')
-
+local BallHolder = require(ReplicatedStorage.ballHolder)
 
 local Ball = {}
 local Balls = {}
@@ -25,6 +25,7 @@ for _,child in BallStorage:GetChildren() do
         PrimaryBall = ball
         ball.isowner = true
     end
+    BallHolder.addBall(ball)
 end
 
 
@@ -38,6 +39,7 @@ BallStorage.ChildAdded:Connect(function(child)
         PrimaryBall = ball
         ball.isowner = true
     end
+    BallHolder.addBall(ball)
 end)
 
 BallStorage.ChildRemoved:Connect(function(child)
@@ -49,6 +51,8 @@ BallStorage.ChildRemoved:Connect(function(child)
         if ball.isowner then
             PrimaryBall = nil
         end
+        BallHolder.removeBall(ball)
+        ball:Destroy()
     end
 end)
 
@@ -96,17 +100,21 @@ Reliable.OnClientEvent:Connect(readPacket)
 
 local Camera = workspace.CurrentCamera
 
+local CameraPart = Instance.new("Part",workspace)
+CameraPart.Anchored = true
+CameraPart.Transparency = 1
+task.spawn(function()
+    task.wait(5)-- I do not know why this works
+    Camera.CameraSubject = CameraPart
+  end)
+
 RunService.Heartbeat:Connect(function()
 
     
     local RIGHT = Camera.CFrame.RightVector
     local FORWARD = Camera.CFrame.LookVector
     local ZERO = Vector3.new()
-    task.spawn(function()
-      task.wait(1)-- I do not know why this works
-      if not PrimaryBall then return end 
-      Camera.CameraSubject = PrimaryBall.part
-    end)
+    
     local W = UIS:IsKeyDown(Enum.KeyCode.W) and FORWARD or ZERO
     local A = UIS:IsKeyDown(Enum.KeyCode.A) and -RIGHT or ZERO
     local S = UIS:IsKeyDown(Enum.KeyCode.S) and -FORWARD or ZERO
@@ -123,6 +131,9 @@ RunService.Heartbeat:Connect(function()
 
     Physics.step()
     Reliable:FireServer(PrimaryBall.part.CFrame, PrimaryBall.velocity)
+    if CameraPart then
+        CameraPart.Position = PrimaryBall.position
+    end
 end)
 
 return Ball
