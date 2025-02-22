@@ -101,6 +101,7 @@ RunService.Heartbeat:Connect(function()
     local Character = LocalPlayer.Character
     
     if Character then
+        Character.PrimaryPart.Anchored = true
         Camera.CameraSubject = Character.PrimaryPart
     end
 
