@@ -9,7 +9,6 @@ require(script.Parent.genewation).generate(template.CustomNoise)
 
 local Camera = workspace.CurrentCamera
 
-Camera.CameraSubject = workspace:WaitForChild("Part")
 
 -- local ball = Physics.newBall(Vector3.new(0, 100, 0),10)
 -- local ball2 = Physics.newBall(Vector3.new(20, 100, 0),10)
