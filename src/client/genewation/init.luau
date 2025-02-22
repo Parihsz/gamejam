@@ -47,7 +47,7 @@ end
 local PartCache = {}
 task.spawn(function()
     local s = os.clock()
-    for i = 1, 1000 do
+    for i = 1, 8000 do
         if os.clock()-s > 0.0014 then
             task.wait()
             s = os.clock()
@@ -63,7 +63,7 @@ local function getPart()
 end
 
 local function recyclePart(part)
-    if #PartCache > 1000 then
+    if #PartCache > 8000 then
         part:Destroy()
         return
     end
@@ -291,7 +291,6 @@ function genewation.generate(settings:settings)
         part.Color = bData.Color
         table.insert(GenerationParts,part)
     end
-
 end
 
 function genewation.clear()
