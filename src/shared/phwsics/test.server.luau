@@ -1,3 +1,7 @@
+do
+    return
+end
+
 local physics = require(script.Parent)
 
 local ball = physics.newBall(Vector3.new(0, 50, 0),10)

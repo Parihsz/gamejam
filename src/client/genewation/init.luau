@@ -124,7 +124,7 @@ function genewation.settings()
 
         Seed = 1, -- The seed for the noise
         UseCylinder = true, -- Use a cylinder instead of a bunch of parts
-        Center = Vector3.new(0, 10, 0), -- The center of the generation
+        Center = Vector3.new(0, 0, 0), -- The center of the generation
         CenterModel = nil::Model?, -- Use a model instead of a cylinder or parts
         CenterRadius = 30, -- The radius of the center
         InnerSize = 60, -- How far before the wall starts
@@ -135,11 +135,11 @@ function genewation.settings()
         WaveMaterial = Enum.Material.Water, -- The material of the waves
         WaveSpeed = 1/4, -- The speed of the waves
 
-        CenterYOffset = 4, -- The offset of the center in the Y direction
+        CenterYOffset = 10, -- The offset of the center in the Y direction
         WallYOffset = 10, -- The offset of the wall in the Y direction
 
-        WallScale = 20, -- The scale of the wall
-        InnerWallHeight = 6, -- The height of the inner wall
+        WallScale = 30, -- The scale of the wall
+        InnerWallHeight = 16, -- The height of the inner wall
         WallNoise = { -- The noise settings for the wall
             firstOctave = -3,
             amplitudes = {2},
