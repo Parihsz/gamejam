@@ -15,7 +15,8 @@ local Ball = {}
 local Balls = {}
 
 local PrimaryBall 
-for _,child in BallStorage:GetChildren() do
+
+local function CreateBall(child)
     local id = tonumber(child.Name)
     local player = child.Value
     local ball = Physics.newBall(Vector3.new(), 5)
@@ -25,22 +26,17 @@ for _,child in BallStorage:GetChildren() do
         PrimaryBall = ball
         ball.isowner = true
     end
+
+    ball.PlayerModel = player
+
     BallHolder.addBall(ball)
 end
 
+for _,child in BallStorage:GetChildren() do
+    CreateBall(child)
+end
 
-BallStorage.ChildAdded:Connect(function(child)
-    local id = tonumber(child.Name)
-    local player = child.Value
-    local ball = Physics.newBall(Vector3.new(0,100,0), 5)
-    ball.ID = id
-    Balls[id] = ball
-    if LocalPlayer == player then
-        PrimaryBall = ball
-        ball.isowner = true
-    end
-    BallHolder.addBall(ball)
-end)
+BallStorage.ChildAdded:Connect(CreateBall)
 
 BallStorage.ChildRemoved:Connect(function(child)
     local id = tonumber(child.Name)

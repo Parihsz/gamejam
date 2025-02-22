@@ -103,16 +103,17 @@ end
 
 function Ball:step()
     Debug:ClearAllChildren()
+    local plrModel:Model = self.PlayerModel and  self.PlayerModel.Character
     --self.position = self.part.Position
     local dt = 1/30
     self = self ::ball
     local Part = self.part
     local params = OverlapParams.new()
-    params.FilterDescendantsInstances = {BallParent,Debug}
+    params.FilterDescendantsInstances = {BallParent}
     params.FilterType = Enum.RaycastFilterType.Include
 
     local rayParams = RaycastParams.new()
-    rayParams.FilterDescendantsInstances = {Part,Debug}
+    rayParams.FilterDescendantsInstances = {Part,Debug,plrModel}
 
     local move = self.movedir.unit
     if move ~= move then
@@ -200,6 +201,15 @@ function Ball:step()
 
     self.position = self.position + self.velocity*dt
     self.part.CFrame = CFrame.new(self.position) * self.rotation
+
+    if plrModel then
+        if self.lastSize ~= self.size then
+            self.lastSize = self.size
+            plrModel:ScaleTo(1)
+            plrModel:ScaleTo(self.size/5)
+        end
+        plrModel:PivotTo(self.part.CFrame)
+    end
 end
 
 function Ball:Destroy()
