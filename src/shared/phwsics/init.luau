@@ -8,7 +8,7 @@ local ParentType = IS_SERVER and 'Camera' or 'Folder'
 
 local BallParent = Instance.new(ParentType,workspace)
 BallParent.Name = 'Balls'
-
+local Assets = game:GetService("ReplicatedStorage"):WaitForChild("Assets")
 local Tasks:RemoteEvent = game:GetService('ReplicatedStorage').Shared.bwallTasks
 
 local Physics = {}
@@ -53,7 +53,7 @@ function Physics.newBall(pos,size)
     self.rotation = CFrame.new()
     self.speed = .4
     self.movedir = Vector3.new()
-    local part = game:GetService("ReplicatedStorage"):WaitForChild("Ball"):Clone()
+    local part = Assets.Balls.BeachBall:Clone()
     part.Size = vector.one*size*2
     part.Position = self.position
     part.Anchored = true

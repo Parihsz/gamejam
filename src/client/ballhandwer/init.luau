@@ -94,7 +94,6 @@ end
 Unreliable.OnClientEvent:Connect(readPacket)
 Reliable.OnClientEvent:Connect(readPacket)
 
-local CameraPart = workspace:WaitForChild("CameraPart")
 local Camera = workspace.CurrentCamera
 
 RunService.Heartbeat:Connect(function()
@@ -103,7 +102,11 @@ RunService.Heartbeat:Connect(function()
     local RIGHT = Camera.CFrame.RightVector
     local FORWARD = Camera.CFrame.LookVector
     local ZERO = Vector3.new()
-    Camera.CameraSubject = workspace:WaitForChild('CameraPart')
+    task.spawn(function()
+      task.wait(1)-- I do not know why this works
+      if not PrimaryBall then return end 
+      Camera.CameraSubject = PrimaryBall.part
+    end)
     local W = UIS:IsKeyDown(Enum.KeyCode.W) and FORWARD or ZERO
     local A = UIS:IsKeyDown(Enum.KeyCode.A) and -RIGHT or ZERO
     local S = UIS:IsKeyDown(Enum.KeyCode.S) and -FORWARD or ZERO
