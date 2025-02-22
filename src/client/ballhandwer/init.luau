@@ -96,14 +96,6 @@ Reliable.OnClientEvent:Connect(readPacket)
 
 local Camera = workspace.CurrentCamera
 
-local CameraPart = Instance.new("Part",workspace)
-CameraPart.Anchored = true
-CameraPart.Transparency = 1
-task.spawn(function()
-    task.wait(5)-- I do not know why this works
-    Camera.CameraSubject = CameraPart
-  end)
-
 RunService.Heartbeat:Connect(function()
 
     
@@ -127,9 +119,6 @@ RunService.Heartbeat:Connect(function()
 
     Physics.step()
     Reliable:FireServer(PrimaryBall.part.CFrame, PrimaryBall.velocity)
-    if CameraPart then
-        CameraPart.Position = PrimaryBall.position
-    end
 end)
 
 return Ball
