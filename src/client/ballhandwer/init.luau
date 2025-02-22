@@ -123,9 +123,6 @@ RunService.Heartbeat:Connect(function()
 
     Physics.step()
     Reliable:FireServer(PrimaryBall.part.CFrame, PrimaryBall.velocity)
-    if PrimaryBall then
-        CameraPart.Position = PrimaryBall.position
-    end
 end)
 
 return Ball
