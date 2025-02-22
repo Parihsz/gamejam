@@ -96,9 +96,14 @@ Reliable.OnClientEvent:Connect(readPacket)
 
 local Camera = workspace.CurrentCamera
 
-RunService.Heartbeat:Connect(function()
 
+RunService.Heartbeat:Connect(function()
+    local Character = LocalPlayer.Character
     
+    if Character then
+        Camera.CameraSubject = Character.PrimaryPart
+    end
+
     local RIGHT = Camera.CFrame.RightVector
     local FORWARD = Camera.CFrame.LookVector
     local ZERO = Vector3.new()
