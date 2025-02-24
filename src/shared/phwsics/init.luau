@@ -43,6 +43,49 @@ local function drawLine(startVector, endVector, color)
 	linePart.Parent = Debug
 end
 
+local function enableTrailVfx(vfxAttachment: Attachment, enabled: boolean)
+	if not IS_CLIENT then
+		return
+	end
+
+	for _, vfx in vfxAttachment:GetChildren() do
+		vfx.Enabled = enabled
+	end
+end
+
+local function resizeTrailVfx(vfxAttachment: Attachment, size: number)
+	if not IS_CLIENT then
+		return
+	end
+
+	local dash1 = vfxAttachment:FindFirstChild("dash1")
+	local dash2 = vfxAttachment:FindFirstChild("dash2")
+
+	dash1.Size = NumberSequence.new(size * 0.857)
+	dash2.Size = NumberSequence.new(size * 0.777)
+end
+
+local function recolorVfx(vfxAttachment: Attachment, color: Color3)
+	if not IS_CLIENT then
+		return
+	end
+
+	local dash1 = vfxAttachment:FindFirstChild("dash1")
+	local dash2 = vfxAttachment:FindFirstChild("dash2")
+
+	dash1.Color = ColorSequence.new(color)
+	dash2.Color = ColorSequence.new(color)
+end
+
+local function hitSfx(position: Vector3)
+	local sfx = Assets.Sfx.Hit:Clone()
+
+	sfx.Position = position
+	sfx.Parent = workspace
+
+	sfx:Destroy()
+end
+
 function Physics.newBall(pos, size)
 	local self = table.clone(Ball)
 	self.size = size
@@ -56,6 +99,7 @@ function Physics.newBall(pos, size)
 	self.boost = 100
 	self.powerUps = {} -- the powerups they have active
 	self.speed = 0.35
+	
 	self.movedir = Vector3.new()
 	self.hits = 0
 	local part = Assets.Balls.BeachBall:Clone()
@@ -63,6 +107,18 @@ function Physics.newBall(pos, size)
 	part.Position = self.position
 	part.Anchored = true
 	part.Position = pos
+
+	self.root = part.Root :: Part
+	self.root.Size = part.Size
+	self.root.Anchored = true
+	self.root.Position = pos
+
+	self.trailVfx = self.root.Attachment :: Attachment
+	self.trailVfx.Position = Vector3.new(0, (part.Size.Y / 2) - 0.35, 0)
+	self.trailEnabled = false
+
+	resizeTrailVfx(self.trailVfx, size)
+	
 	part.Parent = BallParent
 	self.part = part
 	Balls[self.part] = self
@@ -134,17 +190,15 @@ function Ball:step()
 
 	local move = self.movedir.unit
 	if move ~= move then
-		print("Sigma?")
 		move = Vector3.new()
 	end
 	move *= self.speed
-	print(move)
 	self.velocity = self.velocity + self.acceleration + move + self.gravity * dt
 
 	local size = self.size
 	local collisions = workspace:GetPartsInPart(self.part, params)
 	if #collisions > 0 then
-		for _, part in pairs(collisions) do
+		for _, part in collisions do
 			local ball = Balls[part]
 			if ball == self then
 				continue
@@ -155,6 +209,10 @@ function Ball:step()
 				direction = Vector3.xAxis
 			end
 			self.velocity -= direction * 0.5
+
+			if IS_CLIENT then
+				hitSfx(self.position)
+			end
 
 			ball:applyVelocity(direction * 0.5)
 		end
@@ -169,8 +227,8 @@ function Ball:step()
 	local floor = false
 	local friction = 0.02
 
-	if velocity.y <= 0 then
-		local floorRay, useShape = castRay(self, Vector3.new(0, -1, 0), -self.velocity.Y * dt, rayParams)
+	if velocity.Y <= 0 then
+		local floorRay: RaycastResult, useShape = castRay(self, Vector3.new(0, -1, 0), -self.velocity.Y * dt, rayParams)
 		drawLine(self.position, self.position - Vector3.yAxis * checkDist)
 		if floorRay then
 			floor = floorRay.Instance
@@ -192,6 +250,10 @@ function Ball:step()
 		local part = ray.Instance
 		local ball = Balls[part]
 		if ball then
+			if IS_CLIENT then
+				hitSfx(self.position)
+			end
+
 			ball:applyVelocity(self.velocity)
 			self.velocity = -self.velocity
 		elseif part ~= floor then
@@ -228,6 +290,31 @@ function Ball:step()
 			plrModel:ScaleTo(self.size / 5)
 		end
 		plrModel:PivotTo(self.part.CFrame)
+	end
+
+	if IS_CLIENT then
+		self.root.CFrame = CFrame.new(self.part.Position) * CFrame.Angles(0, 0, math.rad(180))
+
+		local rayForVfx = castRay(self, Vector3.new(0, -1, 0), (self.part.Size.Y / 2) + 0.5, rayParams)
+
+		if rayForVfx and self.velocity.Magnitude > 1 and not self.trailEnabled then
+			self.trailEnabled = true
+			enableTrailVfx(self.trailVfx, self.trailEnabled)
+		elseif not rayForVfx and self.trailEnabled or self.velocity.Magnitude < 1 then
+			self.trailEnabled = false
+			enableTrailVfx(self.trailVfx, false)
+		end
+
+		local color = rayForVfx and rayForVfx.Instance.Color
+
+		if color then
+			recolorVfx(self.trailVfx, color)
+		end
+
+		local rollingSfx = self.root.Roll :: Sound
+
+		local flatVelocity = Vector3.new(self.velocity.X, 0, self.velocity.Z)
+		rollingSfx.Volume = if rayForVfx then math.clamp((flatVelocity.Magnitude * 0.05) / 10, 0, 0.05) else 0 
 	end
 end
 

@@ -1,9 +1,9 @@
 local template = require(script.Parent.genewation.pwegenewated)
 local Shared = game:GetService("ReplicatedStorage").Shared
-local Replication = require(script.Parent.ballhandwer)
+-- local Replication = require(script.Parent.ballhandwer)
 local Physics = require(Shared:WaitForChild("phwsics"))
 
---require(script.Parent.genewation).generate(template.CustomNoise)
+-- require(script.Parent.genewation).generate(template.CustomNoise)
 
 local Camera = workspace.CurrentCamera
 
