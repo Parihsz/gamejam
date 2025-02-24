@@ -1,5 +1,7 @@
 local Init = {}
 
+local RunService = game:GetService("RunService")
+
 local Powerups = {}
 local PowerupsFolder = script.Parent
 
@@ -11,7 +13,6 @@ function Init.Create(name: string, parent, position, time: number)
 
 	local powerUp = powerUpModule.new()
 	powerUp:Spawn(parent, position)
-	powerUp:StartTimer(time)
 
 	Powerups[powerUp.Part] = powerUp
 end
