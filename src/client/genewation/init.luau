@@ -137,9 +137,9 @@ function genewation.settings()
         UseCylinder = true, -- Use a cylinder instead of a bunch of parts
         Center = Vector3.new(0, 0, 0), -- The center of the generation
         CenterModel = nil::Model?, -- Use a model instead of a cylinder or parts
-        CenterRadius = 30, -- The radius of the center
-        InnerSize = 60, -- How far before the wall starts
-        OuterSize = 70, -- How far the wall goes
+        CenterRadius = 40, -- The radius of the center
+        InnerSize = 65, -- How far before the wall starts
+        OuterSize = 75, -- How far the wall goes
 
         Waves = baseWaves, -- The settings
         WaveColor = Color3.fromRGB(0, 162, 255), -- The color of the waves
@@ -147,7 +147,7 @@ function genewation.settings()
         WaveSpeed = 1/4, -- The speed of the waves
 
         CenterYOffset = 10, -- The offset of the center in the Y direction
-        WallYOffset = 10, -- The offset of the wall in the Y direction
+        WallYOffset = 15, -- The offset of the wall in the Y direction
 
         WallScale = 30, -- The scale of the wall
         InnerWallHeight = 16, -- The height of the inner wall

@@ -31,6 +31,11 @@ local function CreateBall(child:ObjectValue)
 	ball.PlayerModel = player
 
 	BallHolder.addBall(ball)
+
+	local guid = game:GetService("ReplicatedStorage"):WaitForChild('Assets'):WaitForChild('BillboardGui'):Clone()
+	guid.Parent = ball.part
+	ball.text = guid.TextLabel
+	ball.text.Text = `{player and player.Name..'\n' or ''} Hits: {ball.hits}`
 end
 
 for _, child in BallStorage:GetChildren() do
@@ -89,6 +94,8 @@ local function readPacket(b: buffer)
 		local ball = Balls[ID]
 		local lastTime = ball.lasttime
 		ball.hits = hits
+
+		ball.text.Text = `{ball.PlayerModel and ball.PlayerModel.Name..'\n' or ''} Hits: {hits}`
 		if ball.isowner and lastTime then
 			continue
 		end
@@ -120,14 +127,14 @@ UIS.InputBegan:Connect(function(input: InputObject, processed: boolean)
 		PrimaryBall.canBoost = false
 		PrimaryBall.isBoosting = true
 
-		PrimaryBall.speed *= 1.5
+		PrimaryBall.speed *= 1.7
 
 		while UIS:IsKeyDown(Enum.KeyCode.LeftShift) and PrimaryBall.boost > 0 do
 			PrimaryBall.boost -= 5
 			task.wait(0.15)
 		end
 
-		PrimaryBall.speed /= 1.5
+		PrimaryBall.speed /= 1.7
 
 		PrimaryBall.isBoosting = false
 

@@ -137,6 +137,8 @@ function Ball:step()
 	params.FilterDescendantsInstances = { BallParent }
 	params.FilterType = Enum.RaycastFilterType.Include
 
+	local isowern = self.isowner or IS_SERVER
+
 	local rayParams = RaycastParams.new()
 	rayParams.FilterDescendantsInstances = { Part, Debug, plrModel }
 
@@ -194,12 +196,25 @@ function Ball:step()
 	self.floor = floor
 	local ray = castRay(self, velocity, magnitude * dt, rayParams)
 	drawLine(self.position, self.position + velocity * dt)
-	if ray then
+	if ray and isowern then
 		local part = ray.Instance
 		local ball = Balls[part]
 		if ball then
-			ball:applyVelocity(self.velocity)
-			self.velocity = -self.velocity
+			local lastHit = ball.lastHit or 0
+			-- if  ball.velocity.Magnitude > self.velocity.Magnitude then
+			-- 	self:increaseHits()
+			-- else
+			-- 	ball:increaseHits()
+			-- end
+			if lastHit < os.clock() then
+				ball.lastHit = os.clock() + .5
+				local multiplier = math.sqrt(ball.hits+3)/1.5
+				ball:increaseHits()
+				ball:applyVelocity(self.velocity*multiplier)
+				self.velocity = -self.velocity*1.3
+			else
+				self.velocity = -self.velocity/2
+			end
 		elseif part ~= floor then
 			local normal = ray.Normal
 			local dot = velocity:Dot(normal)
