@@ -56,6 +56,7 @@ function Physics.newBall(pos, size)
 	self.boost = 100
 	self.speed = 0.35
 	self.movedir = Vector3.new()
+	self.hits = 0
 	local part = Assets.Balls.BeachBall:Clone()
 	part.Size = vector.one * size * 2
 	part.Position = self.position
@@ -65,6 +66,10 @@ function Physics.newBall(pos, size)
 	self.part = part
 	Balls[self.part] = self
 	return self
+end
+
+function Physics.getBallFromPart(part)
+	return Balls[part]
 end
 
 local function castRay(ball: ball, dir, mag, params)
@@ -101,6 +106,14 @@ function Ball:applyVelocity(velocity)
 		self.velocity += velocity
 	else
 		self.velocity += velocity
+	end
+end
+
+function Ball:increaseHits()
+	if IS_SERVER then
+		self.hits += 1
+	elseif IS_CLIENT then
+		Tasks:FireServer(self.ID, "h")
 	end
 end
 
