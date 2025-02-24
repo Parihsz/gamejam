@@ -70,6 +70,8 @@ Tasks.OnServerEvent:Connect(function(player,id,task,...)
     end
     if task == 'v' then
         Ball:applyVelocity(...)
+    elseif task == 'h' then
+        Ball.hits += 1
     end
 end)
 
@@ -92,6 +94,7 @@ RunService.Heartbeat:Connect(function()
         Writer:writeuInt(ID)
         Writer:writeCFrame(Ball.part.CFrame)
         Writer:writeVector3(Ball.velocity)
+        Writer:writeuInt(Ball.hits)
     end
     local b = Writer:toBuffer()
     if buffer.len(b) > 900 then

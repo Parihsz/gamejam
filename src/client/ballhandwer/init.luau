@@ -64,6 +64,8 @@ Tasks.OnClientEvent:Connect(function(id, ...)
 		PrimaryBall:applyVelocity(...)
 	elseif id == "p" then
 		PrimaryBall:setPosition(...)
+	elseif id == "h" then
+		PrimaryBall:increaseHits()
 	end
 end)
 
@@ -79,8 +81,10 @@ local function readPacket(b: buffer)
 		local ID = Reader:readuInt()
 		local cframe = Reader:readCFrame()
 		local velocity = Reader:readVector3()
+		local hits = Reader:readuInt()
 		local ball = Balls[ID]
 		local lastTime = ball.lasttime
+		ball.hits = hits
 		if ball.isowner and lastTime then
 			continue
 		end
