@@ -54,6 +54,7 @@ function Physics.newBall(pos, size)
 	self.canBoost = true
 	self.isBoosting = false
 	self.boost = 100
+	self.powerUps = {} -- the powerups they have active
 	self.speed = 0.35
 	self.movedir = Vector3.new()
 	local part = Assets.Balls.BeachBall:Clone()
