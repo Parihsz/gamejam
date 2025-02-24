@@ -43,7 +43,7 @@ function Ball.new(player: Player?)
 	Ball.ID = ID
 	ObjectValue.Name = ID
 	ObjectValue.Value = player
-    Ball.objectValue = ObjectValue
+	Ball.objectValue = ObjectValue
 	if player then
 		player:SetAttribute("BallID", ID)
 	end
@@ -51,10 +51,10 @@ function Ball.new(player: Player?)
 	return Ball
 end
 
-game:GetService('Players').PlayerAdded:Connect(function(player)
-    player.DevEnableMouseLock = false
-    Ball.new(player)
-    Ball.new():setPosition(Vector3.new(30, 100, 0))
+game:GetService("Players").PlayerAdded:Connect(function(player)
+	player.DevEnableMouseLock = false
+	Ball.new(player)
+	Ball.new():setPosition(Vector3.new(30, 100, 0))
 end)
 
 local Unreliable: UnreliableRemoteEvent = ReplicatedStorage.repwciatebwall
@@ -90,21 +90,62 @@ end)
 RunService.Heartbeat:Connect(function()
 	Physics.step()
 
-    Writer:reuse()
-    Writer:writef64(workspace:GetServerTimeNow())
-    for ID, Ball in pairs(Balls) do -- 31 bytes per ball ~= 29 balls max for unreliables
-        Ball.objectValue:SetAttribute("size", Ball.size)
-        Writer:writeuInt(ID)
-        Writer:writeCFrame(Ball.part.CFrame)
-        Writer:writeVector3(Ball.velocity)
-        Writer:writeuInt(Ball.hits)
-    end
-    local b = Writer:toBuffer()
-    if buffer.len(b) > 900 then
-        Reliable:FireAllClients(b)
-        return
-    end
-    Unreliable:FireAllClients(b)
+	for _, self in Balls do
+		local pc = workspace.Powerups:GetChildren()
+		for _, powerup in pc do
+			if
+				powerup:IsA("BasePart")
+				and (self.part.position - powerup.Position).Magnitude
+					< (self.part.size + powerup.Size).Magnitude / 2
+			then
+				table.insert(self.powerUps, powerup)
+
+				if powerup.Name == "Grow" then
+					self:setSize(self.size * 1.5)
+
+					task.delay(5, function()
+						self:setSize(self.size / 1.5)
+					end)
+				elseif powerup.Name == "Speed" then
+					self:setSpeed(self.speed * 2)
+
+					task.delay(5, function()
+						self:setSpeed(self.speed / 2)
+					end)
+				elseif powerup.Name == "Shrink" then
+					self:setSize(self.size / 1.5)
+
+					task.delay(5, function()
+						self:setSize(self.size * 1.5)
+					end)
+				end
+
+				Tasks:FireAllClients(self.ID, "networkPowerups", self.powerUps)
+
+				task.delay(10, function()
+					table.remove(self.powerUps, table.find(self.powerUps, powerup))
+					Tasks:FireAllClients(self.ID, "networkPowerups", self.powerUps)
+				end)
+				powerup:Destroy()
+			end
+		end
+	end
+
+	Writer:reuse()
+	Writer:writef64(workspace:GetServerTimeNow())
+	for ID, Ball in pairs(Balls) do -- 31 bytes per ball ~= 29 balls max for unreliables
+		Ball.objectValue:SetAttribute("size", Ball.size)
+		Writer:writeuInt(ID)
+		Writer:writeCFrame(Ball.part.CFrame)
+		Writer:writeVector3(Ball.velocity)
+		Writer:writeuInt(Ball.hits)
+	end
+	local b = Writer:toBuffer()
+	if buffer.len(b) > 900 then
+		Reliable:FireAllClients(b)
+		return
+	end
+	Unreliable:FireAllClients(b)
 end)
 
 return Ball

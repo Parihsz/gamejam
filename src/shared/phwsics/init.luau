@@ -92,7 +92,7 @@ end
 
 function Ball:setPosition(pos)
 	if IS_SERVER and self.player then
-		Tasks:FireClient(self.player,self.ID, "p", pos)
+		Tasks:FireClient(self.player, self.ID, "p", pos)
 	else
 		self.position = pos
 		self.velocity = Vector3.new()
@@ -100,16 +100,23 @@ function Ball:setPosition(pos)
 end
 
 function Ball:setSize(size)
-	if IS_SERVER and self.ID  then
+	if IS_SERVER and self.ID then
 		Tasks:FireAllClients(self.ID, "s", size)
 	end
 	self.size = size
 	self.part.Size = Vector3.new(size * 2, size * 2, size * 2)
 end
 
+function Ball:setSpeed(speed)
+	if IS_SERVER and self.ID then
+		Tasks:FireAllClients(self.ID, "sp", speed)
+	end
+	self.speed = speed
+end
+
 function Ball:applyVelocity(velocity)
 	if IS_SERVER and self.player then
-		Tasks:FireClient(self.player,self.ID, "v", velocity)
+		Tasks:FireClient(self.player, self.ID, "v", velocity)
 	elseif IS_CLIENT and self.ID and not self.isowner then
 		Tasks:FireServer(self.ID, "v", velocity)
 		self.velocity += velocity
@@ -146,6 +153,7 @@ function Ball:step()
 	if move ~= move then
 		move = Vector3.new()
 	end
+
 	move *= self.speed
 	self.velocity = self.velocity + self.acceleration + move + self.gravity * dt
 
@@ -163,8 +171,14 @@ function Ball:step()
 				direction = Vector3.xAxis
 			end
 			self.velocity -= direction * 0.5
-
-			ball:applyVelocity(direction * 0.5)
+			if table.find(self.powerUps, "Strength") then
+				self.velocity -= direction * 0.5
+			end
+			if table.find(ball.powerUps, "Tank") then
+				ball:applyVelocity(direction * 0.2)
+			else
+				ball:applyVelocity(direction * 0.5)
+			end
 		end
 	end
 
@@ -207,13 +221,13 @@ function Ball:step()
 			-- 	ball:increaseHits()
 			-- end
 			if lastHit < os.clock() then
-				ball.lastHit = os.clock() + .5
-				local multiplier = math.sqrt(ball.hits+3)/1.5
+				ball.lastHit = os.clock() + 0.5
+				local multiplier = math.sqrt(ball.hits + 3) / 1.5
 				ball:increaseHits()
-				ball:applyVelocity(self.velocity*multiplier)
-				self.velocity = -self.velocity*1.3
+				ball:applyVelocity(self.velocity * multiplier)
+				self.velocity = -self.velocity * 1.3
 			else
-				self.velocity = -self.velocity/2
+				self.velocity = -self.velocity / 2
 			end
 		elseif part ~= floor then
 			local normal = ray.Normal

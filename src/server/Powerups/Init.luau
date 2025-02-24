@@ -1,20 +1,25 @@
 local Init = {}
 
-local RunService = game:GetService("RunService")
+local powerups = {
+	"Grow",
+	"Shrink",
+	"Speed",
+	"Tank",
+	"Strength",
+}
 
-local Powerups = {}
-local PowerupsFolder = script.Parent
+task.spawn(function()
+	while true do
+		task.wait(8)
+		local powerUp = powerups[math.random(1, #powerups)]
+		local uwu = game.ReplicatedStorage.Powerups:FindFirstChild(powerUp):Clone()
+		uwu.Parent = workspace.Powerups
+		uwu.Position = Vector3.new(math.random(-10, 10), 45, math.random(-10, 10))
 
-function Init.Create(name: string, parent, position, time: number)
-	local powerUpModule = require(PowerupsFolder:GetChildren():FindFirstChild(name))
-	if not powerUpModule then
-		return
+		task.delay(10, function()
+			uwu:Destroy()
+		end)
 	end
-
-	local powerUp = powerUpModule.new()
-	powerUp:Spawn(parent, position)
-
-	Powerups[powerUp.Part] = powerUp
-end
+end)
 
 return Init

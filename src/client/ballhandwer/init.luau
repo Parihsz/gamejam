@@ -16,7 +16,7 @@ local Balls = {}
 
 local PrimaryBall
 
-local function CreateBall(child:ObjectValue)
+local function CreateBall(child: ObjectValue)
 	local id = tonumber(child.Name)
 	local player = child.Value
 	local size = child:GetAttribute("size") or 5
@@ -32,10 +32,10 @@ local function CreateBall(child:ObjectValue)
 
 	BallHolder.addBall(ball)
 
-	local guid = game:GetService("ReplicatedStorage"):WaitForChild('Assets'):WaitForChild('BillboardGui'):Clone()
+	local guid = game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("BillboardGui"):Clone()
 	guid.Parent = ball.part
 	ball.text = guid.TextLabel
-	ball.text.Text = `{player and player.Name..'\n' or ''} Hits: {ball.hits}`
+	ball.text.Text = `{player and player.Name .. "\n" or ""} Hits: {ball.hits}`
 end
 
 for _, child in BallStorage:GetChildren() do
@@ -62,7 +62,7 @@ local Unreliable: UnreliableRemoteEvent = ReplicatedStorage.repwciatebwall
 local Reliable: RemoteEvent = ReplicatedStorage.repwciatebwallSafe
 local Tasks: RemoteEvent = ReplicatedStorage.bwallTasks
 
-Tasks.OnClientEvent:Connect(function(ball,id, ...)
+Tasks.OnClientEvent:Connect(function(ball, id, ...)
 	local myball = Balls[ball]
 	if not myball then
 		return
@@ -75,6 +75,10 @@ Tasks.OnClientEvent:Connect(function(ball,id, ...)
 		myball:increaseHits()
 	elseif id == "s" then
 		myball:setSize(...)
+	elseif id == "sp" then
+		myball:setSpeed(...)
+	elseif id == "networkPowerups" then
+		myball.powerUps = ...
 	end
 end)
 
@@ -95,7 +99,7 @@ local function readPacket(b: buffer)
 		local lastTime = ball.lasttime
 		ball.hits = hits
 
-		ball.text.Text = `{ball.PlayerModel and ball.PlayerModel.Name..'\n' or ''} Hits: {hits}`
+		ball.text.Text = `{ball.PlayerModel and ball.PlayerModel.Name .. "\n" or ""} Hits: {hits}`
 		if ball.isowner and lastTime then
 			continue
 		end
