@@ -93,10 +93,10 @@ end
 function Ball:setPosition(pos)
 	if IS_SERVER and self.player then
 		Tasks:FireClient(self.player, self.ID, "p", pos)
-	else
-		self.position = pos
-		self.velocity = Vector3.new()
 	end
+	self.position = pos
+	self.velocity = Vector3.new()
+	self.part.Position = pos
 end
 
 function Ball:setSize(size)
@@ -126,12 +126,15 @@ function Ball:applyVelocity(velocity)
 end
 
 function Ball:increaseHits()
-	if IS_SERVER then
+	if IS_SERVER and self.ingame then
 		self.hits += 1
 	elseif IS_CLIENT then
 		Tasks:FireServer(self.ID, "h")
 	end
 end
+
+
+
 
 function Ball:step()
 	Debug:ClearAllChildren()
@@ -171,14 +174,7 @@ function Ball:step()
 				direction = Vector3.xAxis
 			end
 			self.velocity -= direction * 0.5
-			if table.find(self.powerUps, "Strength") then
-				self.velocity -= direction * 0.5
-			end
-			if table.find(ball.powerUps, "Tank") then
-				ball:applyVelocity(direction * 0.2)
-			else
-				ball:applyVelocity(direction * 0.5)
-			end
+			ball:applyVelocity(direction * 0.5)
 		end
 	end
 
@@ -223,9 +219,14 @@ function Ball:step()
 			if lastHit < os.clock() then
 				ball.lastHit = os.clock() + 0.5
 				local multiplier = math.sqrt(ball.hits + 3) / 1.5
+
+				local hasStrength = table.find(self.powerUps, "Strength") and 1.5 or 1
+				local hasTank = table.find(ball.powerUps, "Tank") and .5 or 1
+				local selfHasTank = table.find(self.powerUps, "Tank") and .5 or 1
+
 				ball:increaseHits()
-				ball:applyVelocity(self.velocity * multiplier)
-				self.velocity = -self.velocity * 1.3
+				ball:applyVelocity(self.velocity * multiplier * hasStrength* hasTank)
+				self.velocity = -self.velocity * 1.3 * selfHasTank
 			else
 				self.velocity = -self.velocity / 2
 			end

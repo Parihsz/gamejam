@@ -5,6 +5,8 @@ local RunService = game:GetService("RunService")
 local AssetService = game:GetService("AssetService")
 local GreedyMesh = require(script.gweedymesh)
 
+local Seed:IntValue = game:GetService("ReplicatedStorage"):WaitForChild("Seed")::any
+
 local EnableEditableMesh,EditableMesh = pcall(function()
     local t = AssetService:CreateEditableMesh()
     t:AddVertex(Vector3.zero)
@@ -123,8 +125,9 @@ function genewation.settings()
     return {
         Blocks = { -- The blocks to use by the color function. Return the Index of the block you want to use
             {Material = Enum.Material.Rock,Color = Color3.fromRGB(121, 121, 121)},
-            {Material = Enum.Material.Glass ,Color = Color3.fromRGB(75, 184, 60)}
-
+            {Material = Enum.Material.Glass ,Color = Color3.fromRGB(75, 184, 60)},
+            {Material = Enum.Material.Marble ,Color = Color3.fromRGB(238, 238, 238)},
+            {Material = Enum.Material.Granite ,Color = Color3.fromRGB(116, 66, 66)},
         }::{{Material:Enum.Material,Color:Color3}},
         ColorFunction = function(x,y,z,highestPoint) -- The color function for the blocks
             if y == highestPoint then
@@ -147,7 +150,7 @@ function genewation.settings()
         WaveSpeed = 1/4, -- The speed of the waves
 
         CenterYOffset = 10, -- The offset of the center in the Y direction
-        WallYOffset = 15, -- The offset of the wall in the Y direction
+        WallYOffset = 20, -- The offset of the wall in the Y direction
 
         WallScale = 30, -- The scale of the wall
         InnerWallHeight = 16, -- The height of the inner wall
@@ -183,8 +186,9 @@ local function cullBlocks(blocks)
     end
     return new
 end
-
+local Generating = false
 function genewation.generate(settings:settings)
+    Generating = true
     settings = settings or genewation.settings()
     local OuterSize = settings.OuterSize
     local CenterRadius = settings.CenterRadius
@@ -210,6 +214,11 @@ function genewation.generate(settings:settings)
         for k,v in wave do
             waves[i][k] = v
         end
+    end
+
+    --[[
+    if CenterPart then
+        CenterPart:Destroy()
     end
 
     if not settings.UseCylinder and  not CenterModel then
@@ -250,8 +259,7 @@ function genewation.generate(settings:settings)
         Model.Parent = workspace
         CenterPart = Model
     end
-
-    task.wait()
+    ]]
 
     local blocks = {}
     local s = os.clock()
@@ -291,6 +299,7 @@ function genewation.generate(settings:settings)
     task.wait()
     local meshed = GreedyMesh.mesh(culled)
     s = os.clock()
+    genewation.clear()
     for _,data in meshed do
         if os.clock()-s > 0.0014 then
             task.wait()
@@ -305,13 +314,10 @@ function genewation.generate(settings:settings)
         part.Color = bData.Color
         table.insert(GenerationParts,part)
     end
+    Generating = false
 end
 
 function genewation.clear()
-    if not CenterPart then
-        warn("No generation to clear")
-        return
-    end
     local s = os.clock()
     for _,part in GenerationParts do
         if os.clock()-s > 0.0014 then
@@ -321,9 +327,6 @@ function genewation.clear()
         recyclePart(part)
     end
     table.clear(GenerationParts)
-    if CenterPart then
-        CenterPart:Destroy()
-    end
 end
 
 local t = 0
@@ -345,5 +348,57 @@ end
 RunService.Heartbeat:Connect(update_wave_points)
 
 type settings = typeof(genewation.settings())
+
+
+function genewation.GenerateWithSeed(seed)
+    while Generating do
+        task.wait()
+    end
+    local PreSets = require(script.pwegenewated)
+    local RandomObject = Random.new(seed)
+    
+    local value = RandomObject:NextInteger(1,100)
+    local Config
+
+    if value < 25 then
+        Config = table.clone(PreSets.Default)
+        local octave = RandomObject:NextInteger(-5,-3)
+        local persistance = RandomObject:NextNumber(0.3,0.7)
+        local lacunarity = RandomObject:NextNumber(1.5,2.5)
+        Config.WallNoise.firstOctave = octave
+        Config.WallNoise.persistance = persistance
+        Config.WallNoise.lacunarity = lacunarity
+    elseif value <50 then
+        Config = table.clone(PreSets.RandomPart)
+        local octave = RandomObject:NextInteger(-4,-3)
+        local persistance = RandomObject:NextNumber(0.3,0.7)
+        local lacunarity = RandomObject:NextNumber(1.5,2.5)
+        Config.WallNoise.firstOctave = octave
+        Config.WallNoise.persistance = persistance
+        Config.WallNoise.lacunarity = lacunarity
+    elseif value >90 then
+        Config = table.clone(PreSets.Lava)
+        Config.InnerWallHeight = RandomObject:NextInteger(15,25)
+    else
+        Config = table.clone(PreSets.Noise)
+        local octave = RandomObject:NextInteger(-5,-3)
+        local persistance = RandomObject:NextNumber(0.3,0.7)
+        local lacunarity = RandomObject:NextNumber(1.5,2.5)
+        Config.WallNoise.firstOctave = octave
+        Config.WallNoise.persistance = persistance
+        Config.WallNoise.lacunarity = lacunarity
+        Config.InnerWallHeight = RandomObject:NextInteger(15,25)
+    end
+    Config.Seed = seed
+    genewation.generate(Config)
+end
+
+task.spawn(function()
+    genewation.GenerateWithSeed(Seed.Value)
+end)
+
+Seed.Changed:Connect(function()
+    genewation.GenerateWithSeed(Seed.Value)
+end)
 
 return genewation

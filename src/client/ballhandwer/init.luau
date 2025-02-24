@@ -118,47 +118,45 @@ Reliable.OnClientEvent:Connect(readPacket)
 
 local Camera = workspace.CurrentCamera
 
-UIS.InputBegan:Connect(function(input: InputObject, processed: boolean)
-	if processed then
-		return
+local function showPowerUps(ball:Physics.ball)
+	local part = ball.part
+	local powerups = ball.powerUps
+
+	local hasSpeed = table.find(powerups, "Speed")
+	local hasStrength = table.find(powerups, "Strength")
+	local hasTank = table.find(powerups, "Tank")
+	local Sphere:SelectionSphere = part:FindFirstChild("SelectionSphere") or Instance.new("SelectionSphere", part)
+	Sphere.Adornee = part
+
+	local hasPowerUp = hasSpeed or hasStrength or hasTank
+
+	if hasSpeed then
+		Sphere.Color3 = Color3.fromRGB(217, 255, 0)
+		Sphere.SurfaceTransparency = 1
+		Sphere.Transparency = 0.5
+	elseif hasStrength then
+		Sphere.Color3 = Color3.fromRGB(255, 0, 0)
+		Sphere.SurfaceTransparency = 1
+		Sphere.Transparency = 0.5
+	elseif hasTank then
+		Sphere.SurfaceColor3 = Color3.fromRGB(0, 238, 255)
+		Sphere.SurfaceTransparency = 0.5
+		Sphere.Transparency = 1
 	end
+	Sphere.Visible = hasPowerUp
+end
 
-	if input.KeyCode == Enum.KeyCode.LeftShift then
-		if PrimaryBall.boost == 0 or not PrimaryBall.canBoost then
-			return
-		end
+local accumulator = 0
+local FrameRate = 1/60
+RunService.Heartbeat:Connect(function(dt)
 
-		PrimaryBall.canBoost = false
-		PrimaryBall.isBoosting = true
-
-		PrimaryBall.speed *= 1.7
-
-		while UIS:IsKeyDown(Enum.KeyCode.LeftShift) and PrimaryBall.boost > 0 do
-			PrimaryBall.boost -= 5
-			task.wait(0.15)
-		end
-
-		PrimaryBall.speed /= 1.7
-
-		PrimaryBall.isBoosting = false
-
-		task.delay(1, function()
-			PrimaryBall.canBoost = true
-		end)
-
-		task.delay(2.5, function()
-			while PrimaryBall.boost ~= 100 and not PrimaryBall.isBoosting do
-				PrimaryBall.boost += 5
-				task.wait(0.15)
-			end
-		end)
-	end
-end)
-
-RunService.Heartbeat:Connect(function()
 	local Character = LocalPlayer.Character
 
-	if Character then
+	for _, ball in Balls do
+		showPowerUps(ball)
+	end
+
+	if Character and Character.PrimaryPart then
 		Character.PrimaryPart.Anchored = true
 		Camera.CameraSubject = Character.PrimaryPart
 	end
@@ -176,8 +174,14 @@ RunService.Heartbeat:Connect(function()
 
 	PrimaryBall.movedir = dir
 
-	Physics.step()
-	Reliable:FireServer(PrimaryBall.part.CFrame, PrimaryBall.velocity)
+	accumulator+=dt
+    while accumulator >= FrameRate do
+        totalTime = 0
+		Physics.step()
+		Reliable:FireServer(PrimaryBall.part.CFrame, PrimaryBall.velocity)
+        accumulator = accumulator - FrameRate
+    end
+
 end)
 
 return Ball

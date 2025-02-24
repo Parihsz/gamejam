@@ -1,2 +1,2 @@
 require(script.Parent.ballhandwer)
-require(script.Parent.Powerups.Init)
+require(script.Parent.GwameLoop)

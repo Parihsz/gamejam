@@ -8,6 +8,8 @@ local BallStorage = Instance.new("Folder", ReplicatedStorage)
 BallStorage.Name = "BallReplication"
 local BallHolder = require(ReplicatedStorage.ballHolder)
 
+local Spawns = workspace:WaitForChild("SpawnLocations")
+
 local IDS = {}
 local COUNT = 0
 
@@ -30,13 +32,15 @@ local Balls = {}
 function Ball.remove(ball: Physics.ball)
 	Balls[ball.ID] = nil
 	BallHolder.removeBall(ball)
+    ball.objectValue:Destroy()
 	push(ball.ID)
 	ball:Destroy()
 end
 
 function Ball.new(player: Player?)
 	local ID = pop()
-	local Ball = Physics.newBall(Vector3.new(0, 100, 0), 5)
+    local lobby = workspace:WaitForChild("Lobby"):WaitForChild("Spawn")
+	local Ball = Physics.newBall(lobby.Position, 5)
 	local ObjectValue = Instance.new("ObjectValue", BallStorage)
 	Balls[ID] = Ball
 	Ball.player = player
@@ -53,13 +57,22 @@ end
 
 game:GetService("Players").PlayerAdded:Connect(function(player)
 	player.DevEnableMouseLock = false
-	Ball.new(player)
-	Ball.new():setPosition(Vector3.new(30, 100, 0))
+	local b = Ball.new(player)
+   -- b:setPosition(Spawns:GetChildren()[math.random(1, #Spawns:GetChildren())].Position)
+end)
+
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    local ID = player:GetAttribute("BallID")
+    local b = Balls[ID]
+    if b then
+        Ball.remove(b)
+    end
 end)
 
 local Unreliable: UnreliableRemoteEvent = ReplicatedStorage.repwciatebwall
 local Reliable: RemoteEvent = ReplicatedStorage.repwciatebwallSafe
 local Tasks: RemoteEvent = ReplicatedStorage.bwallTasks
+local abwitys:RemoteEvent = ReplicatedStorage.abwitys
 
 local Writer = Serilizer.newWriter()
 Writer:saveLocation()
@@ -73,7 +86,7 @@ Tasks.OnServerEvent:Connect(function(player, id, task, ...)
 	if task == "v" then
 		Ball:applyVelocity(...)
 	elseif task == "h" then
-		Ball.hits += 1
+		Ball:increaseHits()
 	end
 end)
 
@@ -87,9 +100,11 @@ Reliable.OnServerEvent:Connect(function(player, cf, vel)
 	end
 end)
 
+local Folder = workspace:FindFirstChild("Powerups") or Instance.new("Folder", workspace)
+Folder.Name = "Powerups"
+
 RunService.Heartbeat:Connect(function()
 	Physics.step()
-
 	for _, self in Balls do
 		local pc = workspace.Powerups:GetChildren()
 		for _, powerup in pc do
@@ -98,7 +113,10 @@ RunService.Heartbeat:Connect(function()
 				and (self.part.position - powerup.Position).Magnitude
 					< (self.part.size + powerup.Size).Magnitude / 2
 			then
-				table.insert(self.powerUps, powerup)
+                if self.player then
+                    abwitys:FireClient(self.player, powerup.Name)
+                end
+				table.insert(self.powerUps,powerup.Name)
 
 				if powerup.Name == "Grow" then
 					self:setSize(self.size * 1.5)
@@ -111,6 +129,11 @@ RunService.Heartbeat:Connect(function()
 
 					task.delay(5, function()
 						self:setSpeed(self.speed / 2)
+
+                        local x = table.find(self.powerUps, "Speed")
+                        if not x then return end 
+                        table.remove(self.powerUps, x)
+                        Tasks:FireAllClients(self.ID, "networkPowerups", self.powerUps)
 					end)
 				elseif powerup.Name == "Shrink" then
 					self:setSize(self.size / 1.5)
@@ -123,7 +146,9 @@ RunService.Heartbeat:Connect(function()
 				Tasks:FireAllClients(self.ID, "networkPowerups", self.powerUps)
 
 				task.delay(10, function()
-					table.remove(self.powerUps, table.find(self.powerUps, powerup))
+                    local x = table.find(self.powerUps, powerup.Name)
+                    if not x then return end 
+					table.remove(self.powerUps, x)
 					Tasks:FireAllClients(self.ID, "networkPowerups", self.powerUps)
 				end)
 				powerup:Destroy()

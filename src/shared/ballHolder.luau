@@ -29,4 +29,8 @@ function Holder.getLocalPlayerBall():Physics.ball
     return Balls[id]
 end
 
+function Holder.getAll()
+    return Balls
+end
+
 return Holder
