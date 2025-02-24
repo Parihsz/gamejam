@@ -16,10 +16,11 @@ local Balls = {}
 
 local PrimaryBall
 
-local function CreateBall(child)
+local function CreateBall(child:ObjectValue)
 	local id = tonumber(child.Name)
 	local player = child.Value
-	local ball = Physics.newBall(Vector3.new(), 5)
+	local size = child:GetAttribute("size") or 5
+	local ball = Physics.newBall(Vector3.new(), size)
 	ball.ID = id
 	Balls[id] = ball
 	if LocalPlayer == player then
@@ -56,16 +57,19 @@ local Unreliable: UnreliableRemoteEvent = ReplicatedStorage.repwciatebwall
 local Reliable: RemoteEvent = ReplicatedStorage.repwciatebwallSafe
 local Tasks: RemoteEvent = ReplicatedStorage.bwallTasks
 
-Tasks.OnClientEvent:Connect(function(id, ...)
-	if not PrimaryBall then
+Tasks.OnClientEvent:Connect(function(ball,id, ...)
+	local myball = Balls[ball]
+	if not myball then
 		return
 	end
 	if id == "v" then
-		PrimaryBall:applyVelocity(...)
+		myball:applyVelocity(...)
 	elseif id == "p" then
-		PrimaryBall:setPosition(...)
+		myball:setPosition(...)
 	elseif id == "h" then
-		PrimaryBall:increaseHits()
+		myball:increaseHits()
+	elseif id == "s" then
+		myball:setSize(...)
 	end
 end)
 

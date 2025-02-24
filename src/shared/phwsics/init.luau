@@ -91,16 +91,24 @@ end
 
 function Ball:setPosition(pos)
 	if IS_SERVER and self.player then
-		Tasks:FireClient(self.player, "p", pos)
+		Tasks:FireClient(self.player,self.ID, "p", pos)
 	else
 		self.position = pos
 		self.velocity = Vector3.new()
 	end
 end
 
+function Ball:setSize(size)
+	if IS_SERVER and self.ID  then
+		Tasks:FireAllClients(self.ID, "s", size)
+	end
+	self.size = size
+	self.part.Size = Vector3.new(size * 2, size * 2, size * 2)
+end
+
 function Ball:applyVelocity(velocity)
 	if IS_SERVER and self.player then
-		Tasks:FireClient(self.player, "v", velocity)
+		Tasks:FireClient(self.player,self.ID, "v", velocity)
 	elseif IS_CLIENT and self.ID and not self.isowner then
 		Tasks:FireServer(self.ID, "v", velocity)
 		self.velocity += velocity
@@ -133,11 +141,9 @@ function Ball:step()
 
 	local move = self.movedir.unit
 	if move ~= move then
-		print("Sigma?")
 		move = Vector3.new()
 	end
 	move *= self.speed
-	print(move)
 	self.velocity = self.velocity + self.acceleration + move + self.gravity * dt
 
 	local size = self.size

@@ -43,6 +43,7 @@ function Ball.new(player:Player?)
     Ball.ID = ID
     ObjectValue.Name = ID
     ObjectValue.Value = player
+    Ball.objectValue = ObjectValue
     if player then
         player:SetAttribute("BallID", ID)
     end
@@ -51,8 +52,12 @@ function Ball.new(player:Player?)
 end
 
 game:GetService('Players').PlayerAdded:Connect(function(player)
-    Ball.new(player)
-    Ball.new():setPosition(Vector3.new(30, 100, 0))
+    local x = Ball.new(player)
+    task.wait(6)
+    print('size')
+    x:setSize(20)
+    task.wait(6)
+    x:setSize(4)
 end)
 
 local Unreliable:UnreliableRemoteEvent = ReplicatedStorage.repwciatebwall
@@ -91,6 +96,8 @@ RunService.Heartbeat:Connect(function()
     Writer:reuse()
     Writer:writef64(workspace:GetServerTimeNow())
     for ID, Ball in pairs(Balls) do -- 31 bytes per ball ~= 29 balls max for unreliables
+        Ball.objectValue:SetAttribute("size", Ball.size)
+        
         Writer:writeuInt(ID)
         Writer:writeCFrame(Ball.part.CFrame)
         Writer:writeVector3(Ball.velocity)
