@@ -158,7 +158,7 @@ RunService.Heartbeat:Connect(function()
 
 	Writer:reuse()
 	Writer:writef64(workspace:GetServerTimeNow())
-	for ID, Ball in pairs(Balls) do -- 31 bytes per ball ~= 29 balls max for unreliables
+	for ID, Ball in Balls do -- 31 bytes per ball ~= 29 balls max for unreliables
 		Ball.objectValue:SetAttribute("size", Ball.size)
 		Writer:writeuInt(ID)
 		Writer:writeCFrame(Ball.part.CFrame)
