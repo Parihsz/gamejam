@@ -163,7 +163,7 @@ function Ball:step()
 	local size = self.size
 	local collisions = workspace:GetPartsInPart(self.part, params)
 	if #collisions > 0 then
-		for _, part in pairs(collisions) do
+		for _, part in collisions do
 			local ball = Balls[part]
 			if ball == self then
 				continue
@@ -275,7 +275,7 @@ end
 export type ball = typeof(Physics.newBall(1))
 
 function Physics.step()
-	for _, ball in pairs(Balls) do
+	for _, ball in Balls do
 		if ball.player then
 			continue
 		end
